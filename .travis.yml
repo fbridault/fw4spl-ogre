@@ -1,0 +1,20 @@
+language: cpp
+sudo: false
+addons:
+  apt:
+    packages:
+    - build-essential
+    - ninja-build
+    - python2.7
+    - git
+branches:
+    only:
+        - fw4spl_0.11.0
+compiler:
+    - gcc
+before_script:
+    - git clone https://github.com/fw4spl-org/fw4spl-git.git fw4spl-git
+    - fw4spl-git/hooks/sheldon 
+script: fw4spl-git/hooks/sheldon $TRAVIS_COMMIT_RANGE
+install: true
+
