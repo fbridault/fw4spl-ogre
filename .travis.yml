@@ -3,8 +3,6 @@ sudo: false
 addons:
   apt:
     packages:
-    - build-essential
-    - ninja-build
     - python2.7
     - git
 branches:
@@ -14,7 +12,10 @@ compiler:
     - gcc
 before_script:
     - git clone https://github.com/fw4spl-org/fw4spl-git.git fw4spl-git
-    - fw4spl-git/hooks/sheldon 
+    - cd fw4spl-git
+    - git checkout travis
+    - git config --global codingstyle-hook.uncrustify-path `pwd`/uncrustify
+    - cd ..
 script: fw4spl-git/hooks/sheldon $TRAVIS_COMMIT_RANGE
 install: true
 
