@@ -16,6 +16,8 @@
 
 #include <fwThread/Worker.hpp>
 
+#include <boost/tokenizer.hpp>
+
 #include <OGRE/OgreAxisAlignedBox.h>
 #include <OGRE/OgreCamera.h>
 #include <OGRE/OgreColourValue.h>

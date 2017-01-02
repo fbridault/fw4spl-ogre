@@ -11,8 +11,6 @@
 
 #include <boost/make_shared.hpp>
 
-#include <fwTools/macros.hpp>
-
 #include "fwRenderOgre/config.hpp"
 #include "fwRenderOgre/registry/detail.hpp"
 
