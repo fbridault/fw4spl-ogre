@@ -217,6 +217,15 @@ void composite(inout vec4 dest, in vec4 src)
 
 //-----------------------------------------------------------------------------
 
+float linearDepth(float depthSample)
+{
+    depthSample = 2.0 * depthSample - 1.0;
+    float zLinear = 2.0 * u_clippingNear * u_clippingFar / (u_clippingFar + u_clippingNear - depthSample * (u_clippingFar - u_clippingNear));
+    return zLinear;
+}
+
+//-----------------------------------------------------------------------------
+
 vec4 launchRay(in vec3 rayPos, in vec3 rayDir, in float rayLength, in float sampleDistance)
 {
     vec4 result = vec4(0);
@@ -358,10 +367,13 @@ void main(void)
 
         // Compute the countersink factor to adjust the rayEntry
 
-        float csg = (distance.z - distance.a * (1. / (u_countersinkSlope*20)));
-//        distance.a = distance.a/ (u_clippingFar - u_clippingNear);
-//        fragColor = vec4(distance.a, distance.a, distance.a, 1) * 5;
-//        return;
+        float csg = (distance.z - distance.a * (1. / (u_countersinkSlope)));
+        float lDepth = linearDepth(csg);
+        float depthFactor = (lDepth - u_clippingNear) / (u_clippingFar - u_clippingNear);
+
+        distance.a = depthFactor;
+        fragColor = vec4(distance.a, distance.a, distance.a, 1);
+        return;
         // Ensure that we have a correct distance for the csg factor
         if(csg > 0)
         {
