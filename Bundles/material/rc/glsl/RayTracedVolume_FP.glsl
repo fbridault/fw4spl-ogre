@@ -338,12 +338,8 @@ void main(void)
         discard;
     }
 
-    gl_FragDepth = entryDepth;
-
-    vec3 rayEntry = getFragmentImageSpacePosition(entryDepth, u_invWorldViewProj);
+    vec3 rayEntry;
     vec3 rayExit  = getFragmentImageSpacePosition(exitDepth, u_invWorldViewProj);
-
-    vec3 rayDir   = normalize(rayExit - rayEntry);
 
 #if IDVR == 1
     vec4 importance = texture(u_IC, uv);
@@ -361,16 +357,31 @@ void main(void)
         vec4 distance = texture(u_JFA, uv);
 
         // Compute the countersink factor to adjust the rayEntry
-        float csg = (distance.b - distance.a * (1. / u_countersinkSlope));
+
+        float csg = (distance.z - distance.a * (1. / (u_countersinkSlope*20)));
+//        distance.a = distance.a/ (u_clippingFar - u_clippingNear);
+//        fragColor = vec4(distance.a, distance.a, distance.a, 1) * 5;
+//        return;
         // Ensure that we have a correct distance for the csg factor
         if(csg > 0)
         {
-            rayEntry += rayDir * csg;
+            entryDepth = max(entryDepth, min(csg, exitDepth));
         }
+        rayEntry = getFragmentImageSpacePosition(entryDepth, u_invWorldViewProj);
+    }
+#else
+    else
+    {
+        rayEntry = getFragmentImageSpacePosition(entryDepth, u_invWorldViewProj);
     }
 #endif // CSG
+#else
+    rayEntry = getFragmentImageSpacePosition(entryDepth, u_invWorldViewProj);
 #endif // IDVR == 1
 
+    gl_FragDepth = entryDepth;
+
+    vec3 rayDir = normalize(rayExit - rayEntry);
     rayDir = rayDir * u_sampleDistance;
 
     float rayLength = length(rayExit - rayEntry);

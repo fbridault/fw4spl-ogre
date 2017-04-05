@@ -407,8 +407,9 @@
                 <config selectedTFKey="SelectedTF" />
             </service>
 
-            <service uid="imageReader" type="::uiIO::editor::SIOSelector" >
+            <service uid="imageReader" type="::ioVTK::SImageReader" >
                 <in key="target" uid="imageUID" />
+                <file>/home/fbridault/dev/f4s/data/PATIENT_DICOM/PATIENT_DICOM.vti</file>
                 <type mode="reader" />
             </service>
 
@@ -438,6 +439,9 @@
             <start uid="compositorParameters" />
             <start uid="CoreEditor" />
             <start uid="computeHistogram" />
+            <start uid="imageReader" />
+
+            <update uid="imageReader" />
 
         </config>
 

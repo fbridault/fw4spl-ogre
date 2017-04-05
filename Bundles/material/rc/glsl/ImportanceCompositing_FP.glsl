@@ -65,7 +65,8 @@ void composite(inout vec4 dest, in vec4 src)
 
 //-----------------------------------------------------------------------------
 
-void launchRay(inout vec3 rayPos, in vec3 rayDir, in float rayLength, in float sampleDistance, inout vec4 IC_RayTracing, inout vec4 IC_JFA)
+void launchRay(inout vec3 rayPos, in vec3 rayDir, in float rayLength, in float sampleDistance,
+               inout vec4 IC_RayTracing, inout vec4 IC_JFA, float depth, float depthStep)
 {
 #if IDVR == 1 // MImP
     IC_JFA = vec4(0.0);
@@ -87,6 +88,7 @@ void launchRay(inout vec3 rayPos, in vec3 rayDir, in float rayLength, in float s
 
     float nbSamples = 0.0f;
 
+    bool b = false;
     for(float t = 0; iterCount < 65000 && t < rayLength; iterCount += 1, t += sampleDistance)
     {
         float maskValue = texture(u_mask, rayPos).r;
@@ -95,9 +97,17 @@ void launchRay(inout vec3 rayPos, in vec3 rayDir, in float rayLength, in float s
 #if IDVR == 1
         if(maskValue > edge)
         {
-            IC_RayTracing = vec4(rayPos, 1.);
-            IC_JFA = vec4(uv.x, uv.y, rayPos.z, 1.);
-            break;
+            if(!b)
+            {
+                IC_RayTracing = vec4(rayPos, 1.);
+                IC_JFA = vec4(uv, depth, 1.);
+                b = true;
+            }
+            else
+            {
+                IC_JFA.z = depth;
+            }
+            //break;
         }
 #endif
 #if IDVR == 2 || IDVR == 3
@@ -111,6 +121,7 @@ void launchRay(inout vec3 rayPos, in vec3 rayDir, in float rayLength, in float s
         }
 #endif
 
+        depth += depthStep;
         rayPos += rayDir;
         nbSamples += 1.0f;
     }
@@ -133,18 +144,19 @@ void main(void)
     vec3 rayEntry = getFragmentImageSpacePosition(entryDepth, u_invWorldViewProj);
     vec3 rayExit  = getFragmentImageSpacePosition(exitDepth, u_invWorldViewProj);
 
-    vec3 rayDir   = normalize(rayExit - rayEntry) * u_sampleDistance;
+    float depthStep = (exitDepth - entryDepth) * u_sampleDistance;
+    vec3 rayDir    = normalize(rayExit - rayEntry) * u_sampleDistance;
 
     float rayLength = length(rayExit - rayEntry);
 
     vec3 rayPos = rayEntry;
 
 #if IDVR == 1
-    launchRay(rayPos, rayDir, rayLength, u_sampleDistance, mrt_IC_RayTracing, mrt_IC_JFA);
+    launchRay(rayPos, rayDir, rayLength, u_sampleDistance, mrt_IC_RayTracing, mrt_IC_JFA, entryDepth, depthStep);
 #else
 #if IDVR == 2 || IDVR == 3
     vec4 mrt_IC_JFA = vec4(0.0, 0.0, 0.0, 1.0);
-    launchRay(rayPos, rayDir, rayLength, u_sampleDistance, mrt_IC_RayTracing, mrt_IC_JFA);
+    launchRay(rayPos, rayDir, rayLength, u_sampleDistance, mrt_IC_RayTracing, mrt_IC_JFA, entryDepth, depthStep);
 #endif
 #endif
 }

@@ -641,6 +641,7 @@ void Layer::resetCameraClippingRange(const ::Ogre::AxisAlignedBox& worldCoordBou
             OSLM_TRACE("Near normal");
             m_camera->setNearClipDistance( maxNear );
             m_camera->setFarClipDistance( minFar );
+            OSLM_LOG(minFar << " " << maxNear);
         }
     }
 }
